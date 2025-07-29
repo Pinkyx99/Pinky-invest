@@ -1,18 +1,27 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// Assume process.env.API_KEY is configured in the environment
-const API_KEY = process.env.API_KEY;
+// Gracefully handle the absence of `process` in a pure browser environment.
+const API_KEY = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : undefined;
 
-if (!API_KEY) {
-  console.warn("Gemini API key not found. AI Advisor will be disabled.");
+let ai: GoogleGenAI | undefined;
+
+if (API_KEY) {
+  try {
+    ai = new GoogleGenAI({ apiKey: API_KEY });
+  } catch (error) {
+    console.error("Failed to initialize GoogleGenAI:", error);
+    ai = undefined;
+  }
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+if (!ai) {
+    console.warn("Gemini API key not found or invalid. AI Advisor will be disabled.");
+}
 
 export const getAITradingAdvice = async (cash: number, netWorth: number): Promise<string> => {
-    if (!API_KEY) {
-        return "The AI Advisor is offline. The crystal ball is cloudy because someone forgot to pay the API bill.";
+    if (!ai) {
+        return "The AI Advisor is offline. The crystal ball is cloudy because an API key is not configured.";
     }
 
     const prompt = `
