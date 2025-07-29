@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameState } from '../hooks/useGameState';
@@ -5,9 +6,10 @@ import { Icon } from '../components/Icon';
 import MinesGame from './casino/MinesGame';
 import CrashGame from './casino/CrashGame';
 import BlackjackGame from './casino/BlackjackGame';
+import CoinFlipGame from './casino/CoinFlipGame';
 
 type CasinoViewProps = ReturnType<typeof useGameState>;
-type GameType = 'mines' | 'crash' | 'blackjack' | null;
+type GameType = 'mines' | 'crash' | 'blackjack' | 'coin-flip' | null;
 
 const GameCard: React.FC<{ title: string, description: string, icon: React.ReactNode, onClick: () => void }> = ({ title, description, icon, onClick }) => {
     return (
@@ -39,6 +41,8 @@ const CasinoView: React.FC<CasinoViewProps> = (props) => {
                 return <CrashGame onBack={() => setActiveGame(null)} {...props} />;
             case 'blackjack':
                 return <BlackjackGame onBack={() => setActiveGame(null)} {...props} />;
+            case 'coin-flip':
+                return <CoinFlipGame onBack={() => setActiveGame(null)} {...props} />;
             default:
                 return (
                     <motion.div 
@@ -57,6 +61,14 @@ const CasinoView: React.FC<CasinoViewProps> = (props) => {
                                 show: { transition: { staggerChildren: 0.1 } }
                             }}
                         >
+                            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
+                                <GameCard 
+                                    title="Coin Flip" 
+                                    description="Heads or Tails. 50/50 odds."
+                                    icon={<Icon name="coin" className="w-12 h-12"/>}
+                                    onClick={() => setActiveGame('coin-flip')}
+                                />
+                            </motion.div>
                             <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } }}>
                                 <GameCard 
                                     title="Mines" 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameState } from '../hooks/useGameState';
@@ -16,6 +17,7 @@ const CryptoItem: React.FC<{
     holding: ReturnType<typeof useGameState>['cryptoHoldings'][string],
     onClick: () => void
 }> = ({ crypto, holding, onClick }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const priceHistory = holding.priceHistory.map(value => ({ value }));
     const currentPrice = priceHistory[priceHistory.length - 1]?.value || 0;
     const prevPrice = priceHistory[priceHistory.length - 2]?.value || currentPrice;
@@ -34,7 +36,8 @@ const CryptoItem: React.FC<{
         <motion.div
             onClick={onClick}
             className="p-3 flex items-center gap-3 cursor-pointer rounded-xl hover:bg-[#1C1C1E]"
-            whileHover={{ y: -2 }}
+            onHoverStart={() => setIsHovered(true)}
+            onHoverEnd={() => setIsHovered(false)}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             layoutId={`crypto-card-${crypto.id}`}
         >
@@ -44,7 +47,7 @@ const CryptoItem: React.FC<{
                 <p className="text-sm text-white/50">{crypto.ticker}</p>
             </div>
             <div className={`w-20 h-8 ${trend ? 'sparkline-gain' : 'sparkline-loss'}`}>
-                <Sparkline data={priceHistory} color={color} />
+                <Sparkline data={priceHistory} color={color} showDot={isHovered} />
             </div>
             <div className="text-right w-24">
                  <p className="font-semibold">{formatCurrency(holding.price)}</p>

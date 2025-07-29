@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useGameState } from '../hooks/useGameState';
@@ -83,15 +84,19 @@ const ProfileView: React.FC<ProfileViewProps> = ({ netWorth, tycoonLevel, presti
             <motion.button
                 onClick={() => canPrestige && setPrestigeModalOpen(true)}
                 disabled={!canPrestige}
-                className="w-full font-bold text-lg py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-white bg-[#1C1C1E] border border-white/10 disabled:bg-gray-800 disabled:text-white/40 disabled:cursor-not-allowed disabled:border-gray-700"
+                className="relative overflow-hidden w-full font-bold text-lg py-4 rounded-xl transition-all flex items-center justify-center gap-2 text-white bg-yellow-600/20 border border-yellow-500/30 disabled:bg-gray-800 disabled:text-white/40 disabled:cursor-not-allowed disabled:border-gray-700"
                 whileHover={canPrestige ? { filter: 'brightness(1.2)' } : {}}
                 whileTap={{ scale: canPrestige ? 0.95 : 1 }}
-                animate={canPrestige ? {
-                    borderColor: ["rgba(251, 191, 36, 0.3)", "rgba(251, 191, 36, 0.8)", "rgba(251, 191, 36, 0.3)"]
-                } : {}}
-                transition={canPrestige ? { duration: 2, repeat: Infinity, ease: "easeInOut" } : {}}
             >
-                <Icon name="prestige" className="w-6 h-6 text-yellow-400"/> Go Tycoon
+                {canPrestige && (
+                     <motion.div
+                        className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                        animate={{ x: '250%' }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'linear', delay: 1 }}
+                    />
+                )}
+                <Icon name="prestige" className="w-6 h-6 text-yellow-400 z-10"/>
+                <span className="z-10">Go Tycoon</span>
             </motion.button>
             <p className="text-center text-sm text-white/60 -mt-4">
                 Requires {formatCurrency(PRESTIGE_REQUIREMENT)} net worth

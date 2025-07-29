@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameState } from '../../hooks/useGameState';
@@ -12,40 +13,57 @@ const SUITS = ['spade', 'heart', 'diamond', 'club'];
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const RANK_VALUES: Record<string, number> = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 10, 'Q': 10, 'K': 10, 'A': 11 };
 
-const PlayingCard: React.FC<{ card?: { suit: string; rank: string }, isHidden?: boolean, layoutId: string }> = ({ card, isHidden, layoutId }) => {
+const PlayingCard: React.FC<{ card?: { suit: string; rank: string }, isFlipped: boolean, layoutId: string }> = ({ card, isFlipped, layoutId }) => {
     const suitColor = (card?.suit === 'heart' || card?.suit === 'diamond') ? 'text-red-500' : 'text-gray-800';
+    
     return (
         <motion.div
             layoutId={layoutId}
-            className={`w-20 h-28 p-2 flex flex-col justify-between rounded-lg shadow-md transform-gpu ${isHidden ? 'bg-gray-800 border-2 border-gray-600' : 'bg-gray-200 text-gray-800'}`}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="w-20 h-28 relative"
+            style={{ perspective: '1000px' }}
         >
-            {!isHidden && card && (
-                <>
-                    <div className={suitColor}>
-                        <p className="font-bold text-lg">{card.rank}</p>
-                        <Icon name={card.suit as any} className="w-5 h-5 fill-current"/>
-                    </div>
-                    <div className={`self-end rotate-180 ${suitColor}`}>
-                        <p className="font-bold text-lg">{card.rank}</p>
-                        <Icon name={card.suit as any} className="w-5 h-5 fill-current"/>
-                    </div>
-                </>
-            )}
+            <motion.div
+                className="w-full h-full absolute"
+                style={{ transformStyle: 'preserve-3d' }}
+                initial={false}
+                animate={{ rotateY: isFlipped ? 0 : 180 }}
+                transition={{ duration: 0.5 }}
+            >
+                {/* Front of card */}
+                <div className="absolute w-full h-full p-2 flex flex-col justify-between rounded-lg shadow-md bg-gray-200 text-gray-800" style={{ backfaceVisibility: 'hidden' }}>
+                    {card && (
+                        <>
+                            <div className={suitColor}>
+                                <p className="font-bold text-lg">{card.rank}</p>
+                                <Icon name={card.suit as any} className="w-5 h-5 fill-current"/>
+                            </div>
+                            <div className={`self-end rotate-180 ${suitColor}`}>
+                                <p className="font-bold text-lg">{card.rank}</p>
+                                <Icon name={card.suit as any} className="w-5 h-5 fill-current"/>
+                            </div>
+                        </>
+                    )}
+                </div>
+                {/* Back of card */}
+                <div className="absolute w-full h-full bg-gray-800 border-2 border-gray-600 rounded-lg" style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}>
+                </div>
+            </motion.div>
         </motion.div>
     );
 };
 
 const BlackjackGame: React.FC<BlackjackGameProps> = ({ cash, addCash, removeCash, addActivity, onBack }) => {
-    const [bet, setBet] = useState(500);
+    const [bet, setBet] = useState('500');
+    const [placedBet, setPlacedBet] = useState(0);
     const [status, setStatus] = useState<GameStatus>('betting');
     const [deck, setDeck] = useState<{ suit: string; rank: string }[]>([]);
     const [playerHand, setPlayerHand] = useState<BlackjackHand>({ cards: [], value: 0 });
     const [dealerHand, setDealerHand] = useState<BlackjackHand>({ cards: [], value: 0 });
     const [message, setMessage] = useState('');
+    const [isDealerCardFlipped, setDealerCardFlipped] = useState(false);
+    
+    const numericBet = parseInt(bet, 10);
+    const isBetValid = !isNaN(numericBet) && numericBet > 0;
 
     const calculateHandValue = (cards: {rank: string}[]) => {
         let value = cards.reduce((sum, card) => sum + RANK_VALUES[card.rank], 0);
@@ -58,9 +76,10 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ cash, addCash, removeCash
     };
     
     const startGame = () => {
-        if (cash < bet) return;
-        removeCash(bet);
-        addActivity(`Bet ${formatCurrency(bet)} on Blackjack.`, 'neutral');
+        if (!isBetValid || cash < numericBet) return;
+        setPlacedBet(numericBet);
+        removeCash(numericBet);
+        addActivity(`Bet ${formatCurrency(numericBet)} on Blackjack.`, 'neutral');
 
         const newDeck = SUITS.flatMap(suit => RANKS.map(rank => ({ suit, rank }))).sort(() => Math.random() - 0.5);
         
@@ -72,6 +91,7 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ cash, addCash, removeCash
         setPlayerHand({ cards: initialPlayer, value: playerValue });
         setDealerHand({ cards: initialDealer, value: calculateHandValue(initialDealer) });
         setStatus('playing');
+        setDealerCardFlipped(false);
         setMessage('');
 
         if (playerValue === 21) setTimeout(() => stand(), 500);
@@ -87,13 +107,14 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ cash, addCash, removeCash
         if(newValue > 21) {
             setMessage('Bust!');
             setStatus('ended');
-            addActivity(`Bust! Lost ${formatCurrency(bet)}.`, 'loss');
+            addActivity(`Bust! Lost ${formatCurrency(placedBet)}.`, 'loss');
         }
     };
 
     const stand = () => {
         if(status !== 'playing') return;
         setStatus('dealer');
+        setDealerCardFlipped(true);
     };
     
     useEffect(() => {
@@ -117,23 +138,23 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ cash, addCash, removeCash
                 const playerValue = playerHand.value;
                 if (value > 21 || (playerValue <= 21 && playerValue > value)) {
                     const isBlackjack = playerValue === 21 && playerHand.cards.length === 2;
-                    const winnings = isBlackjack ? bet * 2.5 : bet * 2;
+                    const winnings = isBlackjack ? placedBet * 2.2 : placedBet * 2; // Reduced payout from 2.5 to 2.2
                     setMessage(isBlackjack ? 'Blackjack!' : 'You Win!');
                     addCash(winnings);
                     addActivity(`Won ${formatCurrency(winnings)} in Blackjack!`, 'gain');
                 } else if (value > playerValue) {
                     setMessage('Dealer Wins');
-                    addActivity(`Lost ${formatCurrency(bet)} in Blackjack.`, 'loss');
+                    addActivity(`Lost ${formatCurrency(placedBet)} in Blackjack.`, 'loss');
                 } else {
                     setMessage('Push');
-                    addCash(bet);
+                    addCash(placedBet);
                     addActivity(`Pushed in Blackjack. Bet returned.`, 'neutral');
                 }
             }, 1000);
 
             return () => clearTimeout(dealerTurnTimeout);
         }
-    }, [status]);
+    }, [status, dealerHand.cards, deck, playerHand.value, placedBet, addCash, addActivity]);
     
     const handDisplay = (hand: BlackjackHand, isDealer: boolean) => (
         <div className="relative h-32 w-full flex justify-center items-center">
@@ -152,7 +173,11 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ cash, addCash, removeCash
                     exit={{ y: 50, opacity: 0 }}
                     transition={{type: 'spring', stiffness: 400, damping: 30, delay: i * 0.15}}
                     >
-                    <PlayingCard layoutId={`${isDealer ? 'd' : 'p'}-${i}`} card={card} isHidden={isDealer && i === 1 && status === 'playing'} />
+                    <PlayingCard 
+                        layoutId={`${isDealer ? 'd' : 'p'}-${i}`} 
+                        card={card} 
+                        isFlipped={!(isDealer && i === 1 && status === 'playing') && !(isDealer && status !== 'dealer' && !isDealerCardFlipped && i === 1)}
+                    />
                 </motion.div>
             ))}
             </AnimatePresence>
@@ -204,9 +229,9 @@ const BlackjackGame: React.FC<BlackjackGameProps> = ({ cash, addCash, removeCash
                  <div className="space-y-4">
                      <div className="bg-black/30 p-4 rounded-lg">
                          <label className="text-sm text-white/70">Bet Amount</label>
-                         <input type="number" value={bet} onChange={e => setBet(Math.max(1, Number(e.target.value)))} className="w-full bg-[#1C1C1E] border border-white/10 p-2 rounded-lg" />
+                         <input type="text" value={bet} onChange={e => setBet(e.target.value)} pattern="[0-9]*" inputMode="numeric" className="w-full bg-[#1C1C1E] border border-white/10 p-2 rounded-lg" />
                      </div>
-                     <motion.button onClick={startGame} disabled={cash < bet} className="w-full bg-[#1C1C1E] border border-white/10 hover:bg-[#2a2a2d] text-white font-bold py-3 rounded-xl disabled:bg-gray-800 disabled:text-white/40" whileTap={{ scale: 0.95 }}>Deal</motion.button>
+                     <motion.button onClick={startGame} disabled={!isBetValid || cash < numericBet} className="w-full bg-[#1C1C1E] border border-white/10 hover:bg-[#2a2a2d] text-white font-bold py-3 rounded-xl disabled:bg-gray-800 disabled:text-white/40" whileTap={{ scale: 0.95 }}>Deal</motion.button>
                  </div>
              ) : status === 'playing' ? (
                 <div className="grid grid-cols-2 gap-4">

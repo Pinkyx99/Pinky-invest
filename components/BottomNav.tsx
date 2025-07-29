@@ -10,13 +10,13 @@ interface BottomNavProps {
 }
 
 const navItemsLeft = [
-  { view: View.Crypto, icon: 'chart-bar' as const },
-  { view: View.Casino, icon: 'exchange' as const },
+  { view: View.Crypto, icon: 'bitcoin' as const },
+  { view: View.Casino, icon: 'casino' as const },
 ];
 
 const navItemsRight = [
-  { view: View.Properties, icon: 'apps' as const },
-  { view: View.Profile, icon: 'settings' as const },
+  { view: View.Properties, icon: 'home' as const },
+  { view: View.Profile, icon: 'profile' as const },
 ];
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView }) => {
@@ -37,7 +37,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView }) => {
         <div className="flex w-2/5">
           {navItemsLeft.map((item) => <NavButton key={item.view} item={item} isActive={activeView === item.view} />)}
         </div>
-        <div className="w-1/5 flex justify-center">
+        <div className="w-1/s flex justify-center">
            <button 
              onClick={() => setActiveView(centralView)} 
              className="w-16 h-16 -mt-8 bg-gray-800 border-4 border-black rounded-full flex items-center justify-center shadow-lg"

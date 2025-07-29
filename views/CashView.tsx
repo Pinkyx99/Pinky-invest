@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameState } from '../hooks/useGameState';
-import { formatCurrency } from '../utils/format';
+import { formatCurrency, formatNumber } from '../utils/format';
 import { Icon } from '../components/Icon';
-import { CLICK_UPGRADES, PRESTIGE_MULTIPLIER_PER_LEVEL } from '../constants';
+import { CLICK_UPGRADES, PRESTIGE_MULTIPLIER_PER_LEVEL, CRYPTO_DATA, DAILY_REWARD_BASE } from '../constants';
 
 type CashViewProps = ReturnType<typeof useGameState> & { netWorth: number };
 
@@ -13,7 +13,8 @@ const gridContainerVariants = {
     show: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1
+            staggerChildren: 0.1,
+            delayChildren: 0.1
         }
     }
 };
@@ -36,8 +37,34 @@ const DashboardCard: React.FC<{ children: React.ReactNode, className?: string, o
     </motion.div>
 );
 
+const TycoonCoin3D: React.FC = () => {
+    return (
+        <motion.div
+            className="w-24 h-24 flex items-center justify-center"
+            style={{ perspective: 800 }}
+        >
+            <motion.div
+                className="w-full h-full relative"
+                style={{ transformStyle: 'preserve-3d' }}
+                animate={{ rotateY: 360 }}
+                transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+            >
+                {/* Coin front */}
+                <div className="absolute w-full h-full rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center" style={{ backfaceVisibility: 'hidden' }}>
+                    <Icon name="tycoon" className="w-12 h-12 text-yellow-400" />
+                </div>
+                {/* Coin back */}
+                <div className="absolute w-full h-full rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center" style={{ transform: 'rotateY(180deg)', backfaceVisibility: 'hidden' }}>
+                    <Icon name="tycoon" className="w-12 h-12 text-yellow-400" />
+                </div>
+                 <div className="absolute w-full h-full rounded-full" style={{ transform: 'rotateY(90deg) translateZ(0px)', background: 'linear-gradient(to bottom, #71717a, #404040, #71717a)', width: '4px', left: 'calc(50% - 2px)' }}></div>
+            </motion.div>
+        </motion.div>
+    );
+};
+
 const CashView: React.FC<CashViewProps> = (props) => {
-    const { cash, earnByClick, upgradeClick, clickLevel, tycoonLevel, addActivity } = props;
+    const { cash, earnByClick, upgradeClick, clickLevel, tycoonLevel, addActivity, activityFeed, cryptoHoldings, isDailyRewardAvailable, claimDailyReward, dailyRewardStreak } = props;
     const [floatingTexts, setFloatingTexts] = useState<{ id: number, value: number, x: number, y: number }[]>([]);
 
     const nextUpgrade = CLICK_UPGRADES[clickLevel];
@@ -81,10 +108,6 @@ const CashView: React.FC<CashViewProps> = (props) => {
                 className="bg-gradient-to-br from-[#222] to-black cursor-pointer relative overflow-hidden" 
                 onClick={handleCardTap}
                 whileTap={{ scale: 0.98 }}
-                animate={{
-                    borderColor: ["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 0.1)"]
-                }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
                 <AnimatePresence>
                     {floatingTexts.map(text => (
@@ -135,15 +158,29 @@ const CashView: React.FC<CashViewProps> = (props) => {
                 initial="hidden"
                 animate="show"
             >
-                <DashboardCard variants={gridItemVariants}>
-                    <h3 className="font-semibold mb-2">Transactions</h3>
-                    <p className="text-sm text-gray-400">Spent in October</p>
-                    <div className="flex items-center gap-1 mt-2">
-                        <div className="h-2 w-2/5 bg-purple-500 rounded-l-full"></div>
-                        <div className="h-2 w-1/5 bg-blue-500"></div>
-                        <div className="h-2 w-1/5 bg-orange-500"></div>
-                        <div className="h-2 w-1/5 bg-green-500 rounded-r-full"></div>
-                    </div>
+                <DashboardCard 
+                    variants={gridItemVariants}
+                    className={`relative overflow-hidden ${isDailyRewardAvailable ? 'cursor-pointer' : ''}`}
+                    onClick={isDailyRewardAvailable ? claimDailyReward : undefined}
+                >
+                     {isDailyRewardAvailable && (
+                        <motion.div
+                            className="absolute inset-0 border-2 border-yellow-400 rounded-2xl"
+                            animate={{
+                                scale: [1, 1.05, 1],
+                                opacity: [0.7, 1, 0.7],
+                            }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                            style={{ boxShadow: '0 0 15px rgba(250, 204, 21, 0.5)' }}
+                        />
+                    )}
+                    <Icon name="calendar" className="w-7 h-7 mb-1 text-gray-400"/>
+                    <h3 className="font-semibold">Daily Reward</h3>
+                    {isDailyRewardAvailable ? (
+                        <p className="text-sm text-yellow-400">Claim Now!</p>
+                    ) : (
+                        <p className="text-sm text-gray-500">Claimed</p>
+                    )}
                 </DashboardCard>
                 <DashboardCard variants={gridItemVariants}>
                     <h3 className="font-semibold mb-2">Cashback</h3>
@@ -153,22 +190,12 @@ const CashView: React.FC<CashViewProps> = (props) => {
                         <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Spotify_icon.svg" alt="Spotify" className="w-7 h-7" />
                     </div>
                 </DashboardCard>
-                <DashboardCard variants={gridItemVariants}>
-                    <Icon name="academic-cap" className="w-7 h-7 mb-1 text-gray-400"/>
-                    <h3 className="font-semibold">Tips and training</h3>
-                </DashboardCard>
-                <DashboardCard variants={gridItemVariants}>
-                    <Icon name="apps" className="w-7 h-7 mb-1 text-gray-400"/>
-                    <h3 className="font-semibold">All services</h3>
-                </DashboardCard>
-                <DashboardCard className="col-span-2 flex items-center gap-4" variants={gridItemVariants}>
-                    <div className="w-24 h-24 bg-gray-800 rounded-lg flex-shrink-0">
-                      {/* Placeholder for 3D graphic */}
-                    </div>
-                    <div>
-                        <h3 className="font-semibold">Refer and Earn</h3>
-                        <p className="text-sm text-gray-400 mt-1">Share a referral link to your friend and get rewarded</p>
-                        <button onClick={() => addActivity("Referral program coming soon!", "neutral")} className="mt-2 text-sm font-semibold bg-gray-700/70 px-3 py-1 rounded-md hover:bg-gray-700">Learn more</button>
+                <DashboardCard className="col-span-2 flex items-center gap-2" variants={gridItemVariants}>
+                    <TycoonCoin3D />
+                    <div className="flex-1">
+                        <h3 className="font-semibold">TycoonCoin (TYC)</h3>
+                        <p className="text-sm text-gray-400 mt-1">The official currency of your empire. Price: {formatCurrency(cryptoHoldings['tycooncoin'].price)}</p>
+                        <button disabled className="mt-2 text-sm font-semibold bg-gray-700/70 px-3 py-1 rounded-md cursor-not-allowed">Staking Soon</button>
                     </div>
                 </DashboardCard>
             </motion.div>

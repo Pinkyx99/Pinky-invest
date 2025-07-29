@@ -1,6 +1,7 @@
+
 import React from 'react';
 
-type IconName = 'cash' | 'properties' | 'crypto' | 'assets' | 'casino' | 'profile' | 'up' | 'down' | 'tycoon' | 'prestige' | 'back' | 'gem' | 'mine' | 'spade' | 'heart' | 'diamond' | 'club' | 'checkmark' | 'up-right-arrow' | 'plus-circle' | 'minus-circle' | 'clipboard-document-list' | 'sparkles' | 'home' | 'chart-bar' | 'wallet' | 'apps' | 'bell' | 'send' | 'pay-wallet' | 'search' | 'exchange' | 'settings' | 'plus-lg' | 'academic-cap' | 'mastercard';
+type IconName = 'cash' | 'properties' | 'crypto' | 'assets' | 'casino' | 'profile' | 'up' | 'down' | 'tycoon' | 'prestige' | 'back' | 'gem' | 'mine' | 'spade' | 'heart' | 'diamond' | 'club' | 'checkmark' | 'up-right-arrow' | 'plus-circle' | 'minus-circle' | 'clipboard-document-list' | 'sparkles' | 'home' | 'chart-bar' | 'wallet' | 'apps' | 'bell' | 'send' | 'pay-wallet' | 'search' | 'exchange' | 'settings' | 'plus-lg' | 'academic-cap' | 'mastercard' | 'calendar' | 'coin' | 'briefcase' | 'bitcoin';
 
 interface IconProps {
   name: IconName;
@@ -11,6 +12,7 @@ const icons: Record<IconName, React.ReactNode> = {
   cash: <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />,
   properties: <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18A2.25 2.25 0 004.5 21h15a2.25 2.25 0 002.25-2.25V3m-18 0l18-4.5m-18 18h18" />,
   crypto: <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 100 15 7.5 7.5 0 000-15zM21 21l-5.197-5.197" />,
+  bitcoin: <path strokeLinecap="round" strokeLinejoin="round" d="M9 7.5h6M9 12h6M9 16.5h6M12 4.5v15M7.5 7.5h-1.5a1.5 1.5 0 00-1.5 1.5v6a1.5 1.5 0 001.5 1.5H6M16.5 7.5h1.5a1.5 1.5 0 011.5 1.5v6a1.5 1.5 0 01-1.5 1.5H18" />,
   assets: <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />,
   casino: <path strokeLinecap="round" strokeLinejoin="round" d="M14.25 7.756a4.5 4.5 0 100 8.488M7.756 14.25a4.5 4.5 0 10-8.488 0M14.25 14.25a4.5 4.5 0 100-8.488M7.756 7.756a4.5 4.5 0 108.488 0" />,
   profile: <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />,
@@ -44,16 +46,24 @@ const icons: Record<IconName, React.ReactNode> = {
   'plus-lg': <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />,
   'academic-cap': <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l15.482 0m0 0l15.482 0" />,
   'mastercard': <><circle cx="10" cy="12" r="7" fill="#EA001B" /><circle cx="20" cy="12" r="7" fill="#F79F1A" fillOpacity="0.85" /></>,
+  'calendar': <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 12.75h.008v.008H12v-.008z" />,
+  'coin': <><path strokeLinecap="round" strokeLinejoin="round" d="M12 12a5 5 0 100-10 5 5 0 000 10z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 12a5 5 0 100 10 5 5 0 000-10z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 12a5 5 0 11-10 0 5 5 0 0110 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 12a5 5 0 1110 0 5 5 0 01-10 0z" /></>,
+  'briefcase': <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.05a2.25 2.25 0 01-2.25 2.25h-12a2.25 2.25 0 01-2.25-2.25v-4.05m16.5 0a2.25 2.25 0 00-2.25-2.25h-12a2.25 2.25 0 00-2.25 2.25m16.5 0v-4.05a2.25 2.25 0 00-2.25-2.25h-12a2.25 2.25 0 00-2.25 2.25v4.05m16.5 0h-16.5" />,
 };
 
 export const Icon: React.FC<IconProps> = ({ name, className = 'w-6 h-6' }) => {
-  const isMastercard = name === 'mastercard';
+  const filledIcons: IconName[] = [
+    'mastercard', 'spade', 'heart', 'diamond', 'club', 
+  ];
+
+  const isFilled = filledIcons.includes(name);
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      fill={isMastercard ? 'currentColor' : 'none'}
-      viewBox={isMastercard ? '0 0 30 24' : '0 0 24 24'}
-      strokeWidth={isMastercard ? 0 : 1.5}
+      fill={isFilled ? 'currentColor' : 'none'}
+      viewBox={name === 'mastercard' ? '0 0 30 24' : '0 0 24 24'}
+      strokeWidth={isFilled ? 0 : 1.5}
       stroke="currentColor"
       className={className}
     >

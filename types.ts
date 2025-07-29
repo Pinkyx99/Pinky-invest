@@ -51,8 +51,24 @@ export enum CryptoTrend {
     STABLE = 'stable',
 }
 
+export interface Stock {
+    id: string;
+    name: string;
+    ticker: string;
+    logo: string; // SVG string
+    basePrice: number;
+}
+
+export interface OwnedStock {
+    id: string;
+    shares: number;
+    price: number;
+    value: number;
+    priceHistory: number[];
+}
+
 export interface LuxuryAsset {
-  id: string;
+  id:string;
   name: string;
   cost: number;
   imageUrl: string;
@@ -77,8 +93,12 @@ export interface GameState {
   tycoonLevel: number;
   properties: Record<string, OwnedProperty>;
   cryptoHoldings: Record<string, CryptoHolding>;
+  stocks: Record<string, OwnedStock>;
   assets: Record<string, OwnedAsset>;
   activityFeed: Activity[];
+  lastUpdated: number;
+  dailyRewardStreak: number;
+  lastClaimedDailyReward: number;
 }
 
 export interface MinesGameState {

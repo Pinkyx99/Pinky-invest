@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -32,7 +33,8 @@ const useParticles = (isEmitting: boolean) => {
 };
 
 const CrashGame: React.FC<CrashGameProps> = ({ cash, addCash, removeCash, addActivity, onBack }) => {
-    const [bet, setBet] = useState(100);
+    const [bet, setBet] = useState('100');
+    const [placedBet, setPlacedBet] = useState(0);
     const [phase, setPhase] = useState<GamePhase>('betting');
     const [multiplier, setMultiplier] = useState(1.0);
     const [crashPoint, setCrashPoint] = useState(1.0);
@@ -41,16 +43,21 @@ const CrashGame: React.FC<CrashGameProps> = ({ cash, addCash, removeCash, addAct
 
     const animationFrameRef = useRef<number | undefined>(undefined);
     const [particles, setParticles] = useParticles(phase === 'running');
+    
+    const numericBet = parseInt(bet, 10);
+    const isBetValid = !isNaN(numericBet) && numericBet > 0;
 
     const generateCrashPoint = () => {
-        const r = Math.random();
+        const r = Math.pow(Math.random(), 1.1); // Skew random number towards 0 for more frequent early crashes
         return Math.max(1.01, 1 / (1 - r));
     };
 
     const startGame = () => {
-        if (cash < bet) return;
-        removeCash(bet);
-        addActivity(`Placed a ${formatCurrency(bet)} bet on Crash.`, 'neutral');
+        if (!isBetValid || cash < numericBet) return;
+
+        setPlacedBet(numericBet);
+        removeCash(numericBet);
+        addActivity(`Placed a ${formatCurrency(numericBet)} bet on Crash.`, 'neutral');
 
         setCrashPoint(generateCrashPoint());
         setMultiplier(1.0);
@@ -61,7 +68,7 @@ const CrashGame: React.FC<CrashGameProps> = ({ cash, addCash, removeCash, addAct
 
     const cashOut = () => {
         if (phase !== 'running' || hasCashedOut) return;
-        const winnings = bet * multiplier;
+        const winnings = placedBet * multiplier;
         addCash(winnings);
         setHasCashedOut(true);
         addActivity(`Cashed out ${formatCurrency(winnings)} from Crash!`, 'gain');
@@ -74,12 +81,13 @@ const CrashGame: React.FC<CrashGameProps> = ({ cash, addCash, removeCash, addAct
             const startTime = Date.now();
             const animate = () => {
                 const elapsed = (Date.now() - startTime) / 1000;
-                const newMultiplier = Math.pow(1.05, elapsed);
+                // Slower multiplier growth
+                const newMultiplier = Math.pow(1.04, elapsed);
 
                 if (newMultiplier >= crashPoint) {
                     setMultiplier(crashPoint);
                     setPhase('crashed');
-                    if (!hasCashedOut) addActivity(`Crashed! Lost ${formatCurrency(bet)}.`, 'loss');
+                    if (!hasCashedOut) addActivity(`Crashed! Lost ${formatCurrency(placedBet)}.`, 'loss');
                 } else {
                     setMultiplier(newMultiplier);
                     setChartData(prev => [...prev.slice(-100), { time: elapsed, value: newMultiplier }]);
@@ -91,14 +99,14 @@ const CrashGame: React.FC<CrashGameProps> = ({ cash, addCash, removeCash, addAct
         return () => {
             if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
         };
-    }, [phase, crashPoint, hasCashedOut, bet, addActivity]);
+    }, [phase, crashPoint, hasCashedOut, placedBet, addActivity]);
 
     const getButton = () => {
         switch (phase) {
             case 'betting':
-                return <motion.button onClick={startGame} disabled={cash < bet} className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl disabled:bg-gray-700 disabled:text-white/40" whileTap={{ scale: 0.95 }}>Place Bet ({formatCurrency(bet)})</motion.button>;
+                return <motion.button onClick={startGame} disabled={!isBetValid || cash < numericBet} className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl disabled:bg-gray-700 disabled:text-white/40" whileTap={{ scale: 0.95 }}>Place Bet ({isBetValid ? formatCurrency(numericBet) : '...'})</motion.button>;
             case 'running':
-                 return <motion.button onClick={cashOut} disabled={hasCashedOut} className={`w-full font-bold py-4 rounded-xl ${hasCashedOut ? 'bg-gray-700 text-white/40' : 'bg-green-600 text-white'}`} whileTap={{ scale: 0.95 }}>{hasCashedOut ? `Cashed Out @ ${formatNumber(multiplier)}x` : `Cash Out ${formatCurrency(bet * multiplier)}`}</motion.button>;
+                 return <motion.button onClick={cashOut} disabled={hasCashedOut} className={`w-full font-bold py-4 rounded-xl ${hasCashedOut ? 'bg-gray-700 text-white/40' : 'bg-green-600 text-white'}`} whileTap={{ scale: 0.95 }}>{hasCashedOut ? `Cashed Out @ ${formatNumber(multiplier)}x` : `Cash Out ${formatCurrency(placedBet * multiplier)}`}</motion.button>;
             case 'crashed':
                 return <motion.button onClick={resetGame} className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl" whileTap={{ scale: 0.95 }}>Play Again</motion.button>;
         }
@@ -167,7 +175,7 @@ const CrashGame: React.FC<CrashGameProps> = ({ cash, addCash, removeCash, addAct
             {phase === 'betting' && (
                 <div className="bg-gray-800/50 p-4 rounded-xl">
                     <label className="text-sm text-white/70">Bet Amount</label>
-                    <input type="number" value={bet} onChange={e => setBet(Math.max(1, Number(e.target.value)))} className="w-full bg-gray-900 p-2 rounded-lg border border-gray-700" />
+                    <input type="text" value={bet} onChange={e => setBet(e.target.value)} pattern="[0-9]*" inputMode="numeric" className="w-full bg-gray-900 p-2 rounded-lg border border-gray-700" />
                 </div>
             )}
             
